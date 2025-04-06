@@ -1,7 +1,7 @@
-# Blank Cadmium Project (RT)
-|  Linux | Windows| ESP32 | MSP432 |
-|:--|:--|:--|:--|
-|:heavy_check_mark:|:heavy_check_mark:|:heavy_check_mark:|:question:|
+# DEVS RISC Processor
+|  Linux | Windows|
+|:--|:--|
+|:heavy_check_mark:|:heavy_check_mark:|
 ## Introduction
 This is a blank project that you can use as a template to start off your DEVS models. This project consits of a template atomic and coupled model.
 
