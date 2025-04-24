@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = -DSIM_TIME
 
-CXX_INCLUDES = -I/home/ryanrizk/SYSC4906/TermProject/blank_project_rt/main/. -I/home/ryanrizk/SYSC4906/TermProject/blank_project_rt/main/include -I/home/ryanrizk/cadmium_v2/include
+CXX_INCLUDES = -I/home/Tala/RISC/main/. -I/home/Tala/RISC/main/include -I/home/cadmium/rt_cadmium/include
 
 CXX_FLAGS = -std=gnu++2b
 

@@ -1,4 +1,4 @@
-# Install script for directory: /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/main
+# Install script for directory: /home/Tala/RISC/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

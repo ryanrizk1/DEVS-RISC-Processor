@@ -40,8 +40,8 @@ class instructionUnit : public Atomic<instructionUnit_State> {
     }
 
     void internalTransition(instructionUnit_State& state) const override {
-        //state.sigma = std::numeric_limits<double>::infinity();
-        state.sigma = 0.1;
+        state.sigma = std::numeric_limits<double>::infinity();
+        //state.sigma = 0.1;
     }
 
     void externalTransition(instructionUnit_State& state, double e) const override {
@@ -61,7 +61,7 @@ class instructionUnit : public Atomic<instructionUnit_State> {
                 }
                 
             }
-            state.sigma = state.sigma - e;
+            //state.sigma = state.sigma - e;
         }
     }
     

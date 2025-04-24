@@ -56,37 +56,43 @@ class decodeUnit : public Atomic<decodeUnit_State> {
     void externalTransition(decodeUnit_State& state, double e) const override {
         if(!clk->empty()){
             //std::cout << "[d_unit]: clk" << std::endl;
-            if(!rst->empty()){
-                state.opcode = "0000";
+            if(!rst->empty() && rst->getBag().back() == 1) {
+                
+                state.opcode      = "0000";
                 state.dataMemAddr = "0000";
-                state.opnda = "000";
-                state.opndb = "000";
-                state.dest = "000";
+                state.opnda       = "000";
+                state.opndb       = "000";
+                state.dest        = "000";
+                state.sigma       = std::numeric_limits<double>::infinity();
+            
             } else if(!instruction->empty()){ ////////////////////////// FIX SUBSTR!!
                 state.instruction = instruction->getBag().back();
                 std::cout << "[d_unit]: instruction received from i_unit: " << state.instruction << std::endl;
                 state.opcode = state.instruction.substr(0, 4); 
                 std::cout << "[d_unit]: opcode is " << state.opcode << std::endl;
                 if(state.opcode == "1110"){ // ld instruction
+
                     std::cout << "[d_unit]: ld instruction" << std::endl;
-                    state.dataMemAddr = state.instruction.substr(4, 4);
-                    state.dest = state.instruction.substr(0, 3);
+                    state.dataMemAddr = state.instruction.substr(5, 4);
+                    state.dest = state.instruction.substr(10, 3);
                     state.opnda = "000";
                     state.opndb = "000";
                 } else if(state.opcode == "1111"){ // st instruction
                     std::cout << "[d_unit]: st instruction" << std::endl;
-                    state.dataMemAddr = state.instruction.substr(0, 4);
-                    state.dest = state.instruction.substr(4, 3);
+                    state.dataMemAddr = state.instruction.substr(9, 4);
+                    state.dest = state.instruction.substr(6, 3);
                     state.opnda = "000";
                     state.opndb = "000";
                 } else {
+                    std::cout << "[d_unit]: ALU instruction" << std::endl;
                     state.dataMemAddr = "0000";
-                    state.opnda = state.instruction.substr(6, 3);
-                    state.opndb = state.instruction.substr(3, 3);
-                    state.dest = state.instruction.substr(0, 3);
+                    state.opnda = state.instruction.substr(4, 3);
+                    state.opndb = state.instruction.substr(7, 3);
+                    state.dest = state.instruction.substr(10, 3);
                 }
+                state.sigma = 0.1;
             }
-            state.sigma = state.sigma - e;
+            
         }
     }
     
@@ -96,6 +102,14 @@ class decodeUnit : public Atomic<decodeUnit_State> {
         opnda->addMessage(state.opnda);
         opndb->addMessage(state.opndb);
         dest->addMessage(state.dest);
+
+        // std::cout 
+        //   << "[d_unit]: out → opcode=" << state.opcode
+        //   << ", opnda=" << state.opnda
+        //   << ", opndb=" << state.opndb
+        //   << ", dest=" << state.dest
+        //   << ", addr=" << state.dataMemAddr
+        //   << std::endl;
     }
 
     [[nodiscard]] double timeAdvance(const decodeUnit_State& state) const override {     
