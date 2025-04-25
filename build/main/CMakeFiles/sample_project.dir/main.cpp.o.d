@@ -258,8 +258,10 @@ main/CMakeFiles/sample_project.dir/main.cpp.o: \
  /home/Tala/RISC/main/include/instruction_unit.hpp \
  /home/Tala/RISC/main/include/decode_unit.hpp \
  /home/Tala/RISC/main/include/InstrUnitGen.hpp \
- /home/Tala/RISC/main/include/RegUnitGen.hpp \
+ /home/Tala/RISC/main/include/RegUnitGen.hpp /usr/include/c++/13/bitset \
  /home/Tala/RISC/main/include/register_unit.hpp \
+ /home/Tala/RISC/main/include/execution_unit.hpp \
+ /home/Tala/RISC/main/include/ExecGen.hpp \
  /home/cadmium/rt_cadmium/include/cadmium/simulation/root_coordinator.hpp \
  /home/cadmium/rt_cadmium/include/cadmium/simulation/core/coordinator.hpp \
  /home/cadmium/rt_cadmium/include/cadmium/simulation/core/abs_simulator.hpp \

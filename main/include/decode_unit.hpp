@@ -15,13 +15,14 @@ struct decodeUnit_State {
     std::string opnda;
     std::string opndb;
     std::string dest;
+    int reg_wr_vld = 0;
     explicit decodeUnit_State(): sigma(std::numeric_limits<double>::infinity()), instruction("000000000000000000"), dataMemAddr("0000"), opcode("0000"), opnda("000"), opndb("000"), dest("000"){
     }
 };
 
 #ifndef NO_LOGGING
 std::ostream& operator<<(std::ostream &out, const decodeUnit_State& state) {
-    out  << "{sigma: " << state.sigma << ", instruction: " << state.instruction << "}";
+    out  << "{sigma: " << state.sigma << ", instruction: " << state.instruction << " reg_write = " << state.reg_wr_vld<< "}";
     return out;
 }
 #endif
@@ -37,6 +38,8 @@ class decodeUnit : public Atomic<decodeUnit_State> {
     Port<std::string> opnda; //source register a
     Port<std::string> opndb; //source register b
     Port<std::string> dest; //dest reg to store result from alu opr or from load opr (write-back)
+    Port<int> reg_wr_vld; //enable when there is a write back operation to ther egisters
+
 
     decodeUnit(const std::string id) : Atomic<decodeUnit_State>(id, decodeUnit_State()) {
         clk = addInPort<int>("clk");
@@ -47,6 +50,8 @@ class decodeUnit : public Atomic<decodeUnit_State> {
         opnda = addOutPort<std::string>("opnda");
         opndb = addOutPort<std::string>("opndb");
         dest = addOutPort<std::string>("dest");
+        reg_wr_vld = addOutPort<int>("reg_wr_vld");
+
     }
 
     void internalTransition(decodeUnit_State& state) const override {
@@ -63,7 +68,9 @@ class decodeUnit : public Atomic<decodeUnit_State> {
                 state.opnda       = "000";
                 state.opndb       = "000";
                 state.dest        = "000";
+                state.reg_wr_vld = 0;
                 state.sigma       = std::numeric_limits<double>::infinity();
+
             
             } else if(!instruction->empty()){ ////////////////////////// FIX SUBSTR!!
                 state.instruction = instruction->getBag().back();
@@ -90,6 +97,11 @@ class decodeUnit : public Atomic<decodeUnit_State> {
                     state.opndb = state.instruction.substr(7, 3);
                     state.dest = state.instruction.substr(10, 3);
                 }
+                bool isALUorLoad = (state.opcode != "0000" )
+                && (state.opcode != "1111" );//not NOP or store
+                state.reg_wr_vld = isALUorLoad ? 1 : 0;
+                std::cout << "reg_write = " << state.reg_wr_vld << std::endl;
+
                 state.sigma = 0.1;
             }
             
@@ -102,6 +114,9 @@ class decodeUnit : public Atomic<decodeUnit_State> {
         opnda->addMessage(state.opnda);
         opndb->addMessage(state.opndb);
         dest->addMessage(state.dest);
+        
+        reg_wr_vld->addMessage(state.reg_wr_vld);
+        
 
         // std::cout 
         //   << "[d_unit]: out → opcode=" << state.opcode

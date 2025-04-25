@@ -16,7 +16,7 @@ struct InstrUnitGenState {
     std::vector<std::string> instrQueue; // test instructions
 
     InstrUnitGenState() 
-      : sigma(0.1)
+      : sigma(0.2)
       , cycleCount(0)
       , instrQueue{
           "1110000000000",  // test #1 load opr
