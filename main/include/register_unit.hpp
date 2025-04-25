@@ -9,21 +9,20 @@
 
 using namespace cadmium;
 
-// State: contains the 8 13-bit registers and their values. holds the address of the last read operands a and b.
+// State: contains the 8×13-bit registers and the last read addresses
 struct registerUnit_State {
     double sigma = std::numeric_limits<double>::infinity();
     std::array<std::string,8> regs;
     int readA = 0, readB = 0;
 
     registerUnit_State() {
-      // initialize all 8 registers to zero
       regs.fill(std::string(13,'0'));
     }
 };
 
 #ifndef NO_LOGGING
 inline std::ostream& operator<<(std::ostream &out, const registerUnit_State& s) {
-    out << "{sigma =" << s.sigma 
+    out << "{sigma=" << s.sigma 
         << ", readA=" << s.readA 
         << ", readB=" << s.readB << "}";
     return out;
@@ -33,17 +32,17 @@ inline std::ostream& operator<<(std::ostream &out, const registerUnit_State& s) 
 class registerUnit : public Atomic<registerUnit_State> {
 public:
   // input ports
-  Port<int>         clk;        // rising edge = 1
-  Port<int>         rst;        // 1 = reset
-  Port<int>         reg_wr_vld; // write-enable. only writes to the reg file when this is 1.
-  Port<std::string> result;     // the 13-bit data to be written in reg file
-  Port<int>         dst;        // 3-bit index of the dest register 
-  Port<int>         opnda_addr; // holds index of source register a 
-  Port<int>         opndb_addr; // holds index of source register b
+  Port<int>           clk;        // rising edge = 1
+  Port<int>           rst;        // 1 = reset
+  Port<int>           reg_wr_vld; // write-enable
+  Port<std::string>   result;     // 13-bit data to write
+  Port<std::string>   dst;        // 3-bit dest register index
+  Port<std::string>   opnda_addr; // 3-bit source A index
+  Port<std::string>   opndb_addr; // 3-bit source B index
 
   // output ports
-  Port<std::string> oprnd_a;    // holds the data from source register a
-  Port<std::string> oprnd_b;    // holds the data from source register b
+  Port<std::string>   oprnd_a;    // data from source A
+  Port<std::string>   oprnd_b;    // data from source B
 
   registerUnit(const std::string &id)
     : Atomic<registerUnit_State>(id, registerUnit_State())
@@ -52,9 +51,9 @@ public:
     rst         = addInPort<int>("rst");
     reg_wr_vld  = addInPort<int>("reg_wr_vld");
     result      = addInPort<std::string>("result");
-    dst         = addInPort<int>("dst");
-    opnda_addr  = addInPort<int>("opnda_addr");
-    opndb_addr  = addInPort<int>("opndb_addr");
+    dst         = addInPort<std::string>("dst");
+    opnda_addr  = addInPort<std::string>("opnda_addr");
+    opndb_addr  = addInPort<std::string>("opndb_addr");
 
     oprnd_a     = addOutPort<std::string>("oprnd_a");
     oprnd_b     = addOutPort<std::string>("oprnd_b");
@@ -64,41 +63,44 @@ public:
     s.sigma = std::numeric_limits<double>::infinity();
   }
 
-  // On rising clock: handle reset, writing to register file, and save read-addresses
+  // On rising clock: reset, write-back, and latch read-addresses
   void externalTransition(registerUnit_State& s, double /*e*/) const override {
     if (!clk->empty() && clk->getBag().back() == 1) {
-      // check if its a reset signal
+      // synchronous reset
       if (!rst->empty() && rst->getBag().back() == 1) {
         s.regs.fill(std::string(13,'0'));
-      }
-      else {
-        // check if its a write back
+      } else {
+        // write-back if enabled
         if (!reg_wr_vld->empty() && reg_wr_vld->getBag().back() == 1
-            && !result->empty() && !dst->empty()) 
+            && !result->empty() && !dst->empty())
         {
-          int d = dst->getBag().back();
+          // convert 3-bit dst to integer
+          int d = std::stoi(dst->getBag().back(), nullptr, 2);
           if (d >= 0 && d < 8) {
             s.regs[d] = result->getBag().back();
-            std::cout << "[reg_unit]: dest" << d 
-                      << "  " << s.regs[d] << std::endl;
+            std::cout << "[reg_unit] write R" << d 
+                      << " = " << s.regs[d] << std::endl;
           }
         }
       }
-      // always save the address of the two source operands to be used in the output()
-      if (!opnda_addr->empty()) s.readA = opnda_addr->getBag().back();
-      if (!opndb_addr->empty()) s.readB = opndb_addr->getBag().back();
-      s.sigma = 0.0;
+      // latch source-A index
+      if (!opnda_addr->empty()) {
+        s.readA = std::stoi(opnda_addr->getBag().back(), nullptr, 2);
+      }
+      // latch source-B index
+      if (!opndb_addr->empty()) {
+        s.readB = std::stoi(opndb_addr->getBag().back(), nullptr, 2);
+      }
+      s.sigma = 0.0;  // immediate output
     }
   }
 
-  // Output the values of the two source operands. The ALU will choose which operand is valid for the current operation.
+  // Output the two source operands
   void output(const registerUnit_State& s) const override {
-    std::string a = s.regs[s.readA];
-    std::string b = s.regs[s.readB];
-    oprnd_a->addMessage(a);
-    oprnd_b->addMessage(b);
-    std::cout << "[reg_unit]: out  operand A=" << a 
-              << " operand B=" << b << std::endl;
+    oprnd_a->addMessage(s.regs[s.readA]);
+    oprnd_b->addMessage(s.regs[s.readB]);
+    std::cout << "[reg_unit] out A=" << s.regs[s.readA] 
+              << "  B=" << s.regs[s.readB] << std::endl;
   }
 
   [[nodiscard]] double timeAdvance(const registerUnit_State& s) const override {
