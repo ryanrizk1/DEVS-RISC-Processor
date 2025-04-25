@@ -56,18 +56,16 @@ public:
         }
     }
 
-    // No external input
     void externalTransition(InstrUnitGenState&, double) const override {}
 
     void output(const InstrUnitGenState& s) const override {
-        // always send a clock tick
         clk->addMessage(1);
 
         if (s.cycleCount == 0) {
-            // first cycle: assert reset only
+            // first cycle: assert reset 
             rst->addMessage(1);
         } else {
-            // subsequent cycles: deassert reset
+            // next cycles: deassert reset
             rst->addMessage(0);
             // send instruction
             if (s.cycleCount <= static_cast<int>(s.instrQueue.size())) {
