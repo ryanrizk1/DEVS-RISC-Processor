@@ -32,11 +32,11 @@ class decodeUnit : public Atomic<decodeUnit_State> {
     Port<int> clk;
     Port<int> rst;
     Port<std::string> instruction;
-    Port<std::string> dataMemAddr;
-    Port<std::string> opcode;
-    Port<std::string> opnda;
-    Port<std::string> opndb;
-    Port<std::string> dest;
+    Port<std::string> dataMemAddr; //used for offset in load opr
+    Port<std::string> opcode; //opr to be performed
+    Port<std::string> opnda; //source register a
+    Port<std::string> opndb; //source register b
+    Port<std::string> dest; //dest reg to store result from alu opr or from load opr (write-back)
 
     decodeUnit(const std::string id) : Atomic<decodeUnit_State>(id, decodeUnit_State()) {
         clk = addInPort<int>("clk");

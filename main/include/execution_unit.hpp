@@ -176,7 +176,7 @@ class executionUnit : public Atomic<executionUnit_State> {
                 val = 0; // default 
             }
 
-            // for all other ALU ops
+            // for all the other ALU ops
             s.result = std::bitset<13>(val).to_string();
             s.dataMemAddress.clear();
             s.storeData.clear();
@@ -185,7 +185,6 @@ class executionUnit : public Atomic<executionUnit_State> {
         }
     }
 
-    
     
     // output function
     void output(const executionUnit_State& state) const override {
