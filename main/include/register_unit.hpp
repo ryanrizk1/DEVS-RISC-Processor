@@ -32,17 +32,17 @@ inline std::ostream& operator<<(std::ostream &out, const registerUnit_State& s) 
 class registerUnit : public Atomic<registerUnit_State> {
 public:
   // input ports
-  Port<int>           clk;        // rising edge = 1
-  Port<int>           rst;        // 1 = reset
-  Port<int>           reg_wr_vld; // write-enable
-  Port<std::string>   result;     // 13-bit data to write
-  Port<std::string>   dst;        // 3-bit dest register index
-  Port<std::string>   opnda_addr; // 3-bit source A index
-  Port<std::string>   opndb_addr; // 3-bit source B index
+  Port<int>         clk;        // rising edge = 1
+  Port<int>         rst;        // 1 = reset
+  Port<int>         reg_wr_vld; // write-enable
+  Port<std::string> result;     // 13-bit data to write
+  Port<std::string> dst;        // 3-bit dest register index
+  Port<std::string> opnda_addr; // 3-bit source A index
+  Port<std::string> opndb_addr; // 3-bit source B index
 
   // output ports
-  Port<std::string>   oprnd_a;    // data from source A
-  Port<std::string>   oprnd_b;    // data from source B
+  Port<std::string> oprnd_a;    // data from source A
+  Port<std::string> oprnd_b;    // data from source B
 
   registerUnit(const std::string &id)
     : Atomic<registerUnit_State>(id, registerUnit_State())
@@ -66,32 +66,42 @@ public:
   // On rising clock: reset, write-back, and latch read-addresses
   void externalTransition(registerUnit_State& s, double /*e*/) const override {
     if (!clk->empty() && clk->getBag().back() == 1) {
-      // synchronous reset
+      bool hasUpdate = false;
+
+      //  reset
       if (!rst->empty() && rst->getBag().back() == 1) {
         s.regs.fill(std::string(13,'0'));
+        hasUpdate = true;
       } else {
         // write-back if enabled
         if (!reg_wr_vld->empty() && reg_wr_vld->getBag().back() == 1
             && !result->empty() && !dst->empty())
         {
-          // convert 3-bit dst to integer
           int d = std::stoi(dst->getBag().back(), nullptr, 2);
           if (d >= 0 && d < 8) {
             s.regs[d] = result->getBag().back();
             std::cout << "[reg_unit] write R" << d 
                       << " = " << s.regs[d] << std::endl;
+            hasUpdate = true;
           }
         }
       }
+
       // latch source-A index
       if (!opnda_addr->empty()) {
         s.readA = std::stoi(opnda_addr->getBag().back(), nullptr, 2);
+        hasUpdate = true;
       }
       // latch source-B index
       if (!opndb_addr->empty()) {
         s.readB = std::stoi(opndb_addr->getBag().back(), nullptr, 2);
+        hasUpdate = true;
       }
-      s.sigma = 0.0;  // immediate output
+
+      // only send output if something actually changed
+      s.sigma = hasUpdate
+              ? 0.0
+              : std::numeric_limits<double>::infinity();
     }
   }
 

@@ -12,27 +12,58 @@
 #include "register_unit.hpp"
 #include "execution_unit.hpp"
 #include "ExecGen.hpp"
+#include "reset.hpp"
 
 using namespace cadmium;
 
 struct top_coupled : public Coupled {
     top_coupled(const std::string& id) : Coupled(id) {
         //auto init = addComponent<initialize>("init");
-        //auto clock = addComponent<clockUnit>("clock");
-        //auto i_mem = addComponent<instructionMemory>("i_mem");
-        //auto i_unit = addComponent<instructionUnit>("i_unit");
+        auto reset = addComponent<resetUnit>("reset");
+        auto clock = addComponent<clockUnit>("clock");
+        //auto mem = addComponent<main_memory>("i_mem");
+        auto i_unit = addComponent<instructionUnit>("i_unit");
         auto d_unit = addComponent<decodeUnit>("d_unit");
-        //auto exec_unit = addComponent<executionUnit>("exec_unit");
-        //auto reg_unit = addComponent<registerUnit>("reg_unit");
-        auto instrUnit_gen = addComponent<InstrUnitGen>("instrUnit_gen");
+        auto exec_unit = addComponent<executionUnit>("exec_unit");
+        auto reg_unit = addComponent<registerUnit>("reg_unit");
+        //auto instrUnit_gen = addComponent<InstrUnitGen>("instrUnit_gen");
         //auto regUnit_gen = addComponent<RegisterUnitGen>("regUnit_gen");
         //auto exec_gen = addComponent<ExecUnitGen>("exec_gen");
         
+        //clock
+        addCoupling(clock->clk, i_unit->clk);
+        addCoupling(clock->clk, d_unit->clk);
+        addCoupling(clock->clk, exec_unit->clk);
+        addCoupling(clock->clk, reg_unit->clk);
+        
+        //reset
+        addCoupling(reset->rst,i_unit->rst );
+        addCoupling(reset->rst,d_unit->rst );
+        addCoupling(reset->rst, exec_unit->rst);
+        addCoupling(reset->rst, reg_unit->rst);
 
+        //fetch to decode
+        addCoupling(i_unit->ir, d_unit->instruction);
 
-        //addCoupling(clock->clk, i_unit->clk);
-        //addCoupling(clock->clk, d_unit->clk);
+        //decode to register file
+        addCoupling(d_unit->opnda, reg_unit->opnda_addr);
+        addCoupling(d_unit->opndb, reg_unit->opndb_addr);
 
+        //decode to execution
+        addCoupling(d_unit->opcode, exec_unit->opcode);
+        addCoupling(d_unit->dataMemAddr, exec_unit->dataMemAddr);
+        addCoupling(d_unit->dest, exec_unit->destAddr);
+        addCoupling(d_unit->reg_wr_vld, exec_unit->reg_wr_vld);
+
+        //register file to execution
+        addCoupling(reg_unit->oprnd_a, exec_unit->opnda);
+        addCoupling(reg_unit->oprnd_b, exec_unit->opndb);
+
+        //execution unit to register file
+        addCoupling(exec_unit->destReg, reg_unit->result);
+        addCoupling(exec_unit->reg_wr_vld, reg_unit->reg_wr_vld);
+        addCoupling(exec_unit->destAddr, reg_unit->dst);
+        
 
         //addCoupling(init->pc_init, i_mem->init);
         // addCoupling(i_mem->instruction, i_unit->instruction);
@@ -45,9 +76,9 @@ struct top_coupled : public Coupled {
         // addCoupling(instrUnit_gen->instruction, i_unit->instruction);
 
         //Test Decode Unit
-        addCoupling(instrUnit_gen->clk, d_unit->clk);
-        addCoupling(instrUnit_gen->rst, d_unit->rst);
-        addCoupling(instrUnit_gen->instruction, d_unit->instruction);
+        // addCoupling(instrUnit_gen->clk, d_unit->clk);
+        // addCoupling(instrUnit_gen->rst, d_unit->rst);
+        // addCoupling(instrUnit_gen->instruction, d_unit->instruction);
 
         //Test RegFile
         // addCoupling(regUnit_gen->clk , reg_unit->clk);

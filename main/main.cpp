@@ -1,4 +1,5 @@
 #include <limits>
+#include "include/MM_IU_top.hpp"
 #include "include/top.hpp"
 
 /*
@@ -35,7 +36,7 @@ extern "C" {
 	#endif
 	{
 	
-		auto model = std::make_shared<top_coupled> ("top");
+		auto model = std::make_shared<PipelineTop> ("PipelineTop");
 		
 		#ifdef SIM_TIME
 			auto rootCoordinator = cadmium::RootCoordinator(model);

@@ -59,6 +59,7 @@ class instructionUnit : public Atomic<instructionUnit_State> {
                 if(state.pc == 2){
                     state.pc = 0;
                 }
+                state.sigma = 0.0;
                 
             }
             //state.sigma = state.sigma - e;

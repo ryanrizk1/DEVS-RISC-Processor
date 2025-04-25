@@ -1,7 +1,10 @@
-#ifndef ATOMIC_MODEL_HPP
-#define ATOMIC_MODEL_HPP
+#ifndef DATA_MEM_HPP
+#define DATA_MEM_HPP
 
 #include <random>
+#include <array>
+#include <string>
+#include <limits>
 #include <iostream>
 #include "cadmium/modeling/devs/atomic.hpp"
 
@@ -14,7 +17,14 @@ struct dataMemory_State {
     std::string dataIn;
     std::string dataOut;
     std::array<std::string, 16> data = {};
-    explicit dataMemory_State(): sigma(1){
+
+    dataMemory_State()
+      : sigma(std::numeric_limits<double>::infinity()),
+        stAddr(""), ldAddr(""), dataIn(""), dataOut(""),
+        data{}
+    {
+        // initialize all 16 words to zero
+        data.fill(std::string(13,'0'));
     }
 };
 
@@ -48,17 +58,31 @@ class dataMemory : public Atomic<dataMemory_State> {
         state.sigma = std::numeric_limits<double>::infinity();
     }
 
-    void externalTransition(dataMemory_State& state, double e) const override {
-        if(!clk->empty()){
-            if(!dataMemAddrIn->empty()){
-                state.stAddr = dataMemAddrIn->getBag().back();
-                if(!dataIn->empty()){
-                    state.data[state.stAddr] = dataIn->getBag().back(); //str to int for index
-                } 
-            }
-            else if(!dataMemAddrOut->empty()){
-                state.ldAddr = dataMemAddrOut->getBag().back();
-                state.dataOut = state.data[state.ldAddr];
+        void externalTransition(dataMemory_State& s, double /*e*/) const override {
+
+        if (!clk->empty() && clk->getBag().back() == 1) {
+
+            if (!rst->empty() && rst->getBag().back() == 1) {
+                s.data.fill(std::string(13,'0'));
+            } else {
+                // STORE
+                if (!dataMemAddrIn->empty()) {
+                    s.stAddr = dataMemAddrIn->getBag().back();
+                    if (!dataIn->empty()) {
+                        int idx = std::stoi(s.stAddr, nullptr, 2);
+                        if (idx >= 0 && idx < 16) {
+                            s.data[idx] = dataIn->getBag().back();
+                        }
+                    }
+                }
+                // LOAD
+                else if (!dataMemAddrOut->empty()) {
+                    s.ldAddr = dataMemAddrOut->getBag().back();
+                    int idx = std::stoi(s.ldAddr, nullptr, 2);
+                    if (idx >= 0 && idx < 16) {
+                        s.dataOut = s.data[idx];
+                    }
+                }
             }
         }
     }

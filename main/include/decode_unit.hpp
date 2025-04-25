@@ -102,7 +102,7 @@ class decodeUnit : public Atomic<decodeUnit_State> {
                 state.reg_wr_vld = isALUorLoad ? 1 : 0;
                 std::cout << "reg_write = " << state.reg_wr_vld << std::endl;
 
-                state.sigma = 0.1;
+                state.sigma = 0.0;
             }
             
         }
@@ -118,13 +118,13 @@ class decodeUnit : public Atomic<decodeUnit_State> {
         reg_wr_vld->addMessage(state.reg_wr_vld);
         
 
-        // std::cout 
-        //   << "[d_unit]: out → opcode=" << state.opcode
-        //   << ", opnda=" << state.opnda
-        //   << ", opndb=" << state.opndb
-        //   << ", dest=" << state.dest
-        //   << ", addr=" << state.dataMemAddr
-        //   << std::endl;
+        std::cout 
+          << "[d_unit]: out → opcode=" << state.opcode
+          << ", opnda=" << state.opnda
+          << ", opndb=" << state.opndb
+          << ", dest=" << state.dest
+          << ", addr=" << state.dataMemAddr
+          << std::endl;
     }
 
     [[nodiscard]] double timeAdvance(const decodeUnit_State& state) const override {     
