@@ -15,7 +15,7 @@ using std::tuple;
 using std::get;
 
 struct ExecUnitGenState {
-    double sigma;                   // time until next event
+    double sigma;                 
     int    testIdx;          
     vector<tuple<string,string,string,string>> tests;
     ExecUnitGenState()
