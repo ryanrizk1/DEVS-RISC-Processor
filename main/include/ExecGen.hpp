@@ -16,16 +16,16 @@ using std::get;
 
 struct ExecUnitGenState {
     double sigma;                   // time until next event
-    int    testIdx;                 // which vector we're on
+    int    testIdx;          
     vector<tuple<string,string,string,string>> tests;
     ExecUnitGenState()
       : sigma(0.0)
       , testIdx(0)
       , tests{
           // { opcode, opnda,       opndb,       destAddr }
-          {"0001","00100010","01000100","011"}, // ADD  R1+R2→R3
-          {"0010","01100110","00100010","100"}, // SUB  R3−R1→R4
-          {"0011","01000100","01100110","101"}  // AND  R2&R3→R5
+          {"0001","00100010","01000100","011"}, // ADD  R1+R2->R3
+          {"0010","01100110","00100010","100"}, // SUB  R3−R1->R4
+          {"0011","01000100","01100110","101"}  // AND  R2&R3->R5
       }
     {}
 };
@@ -41,7 +41,6 @@ class ExecUnitGen : public Atomic<ExecUnitGenState> {
 public:
     // outputs that match ExecutionUnit's input ports
     Port<string> opcode, opnda, opndb, destAddr;
-    Port<int>    reg_wr_vld;
 
     ExecUnitGen(const string &id) 
       : Atomic<ExecUnitGenState>(id, ExecUnitGenState())
@@ -50,7 +49,6 @@ public:
         opnda      = addOutPort<string>("opnda");
         opndb      = addOutPort<string>("opndb");
         destAddr   = addOutPort<string>("destAddr");
-        reg_wr_vld = addOutPort<int>("reg_wr_vld");
     }
 
     void internalTransition(ExecUnitGenState &s) const override {
@@ -73,7 +71,6 @@ public:
             opnda     ->addMessage(get<1>(t));
             opndb     ->addMessage(get<2>(t));
             destAddr  ->addMessage(get<3>(t));
-            reg_wr_vld->addMessage(1);
             std::cout << "[ExecUnitGen] test " << s.testIdx
                       << ": opcode=" << get<0>(t)
                       << " A=" << get<1>(t)
