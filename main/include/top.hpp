@@ -4,102 +4,95 @@
 #include "cadmium/modeling/devs/coupled.hpp"
 #include "initialize.hpp"
 #include "clock.hpp"
-#include "instruction_memory.hpp"
+#include "main_memory.hpp"
 #include "instruction_unit.hpp"
 #include "decode_unit.hpp"
-#include "InstrUnitGen.hpp"
-#include "RegUnitGen.hpp"
-#include "register_unit.hpp"
 #include "execution_unit.hpp"
-#include "ExecGen.hpp"
-#include "reset.hpp"
+#include "register_unit.hpp"
+#include "risc_processor_gen.hpp"
+#include "risc_proc.hpp"
 
 using namespace cadmium;
 
 struct top_coupled : public Coupled {
+
     top_coupled(const std::string& id) : Coupled(id) {
-        //auto init = addComponent<initialize>("init");
-        auto reset = addComponent<resetUnit>("reset");
-        auto clock = addComponent<clockUnit>("clock");
-        //auto mem = addComponent<main_memory>("i_mem");
-        auto i_unit = addComponent<instructionUnit>("i_unit");
-        auto d_unit = addComponent<decodeUnit>("d_unit");
-        auto exec_unit = addComponent<executionUnit>("exec_unit");
-        auto reg_unit = addComponent<registerUnit>("reg_unit");
-        //auto instrUnit_gen = addComponent<InstrUnitGen>("instrUnit_gen");
-        //auto regUnit_gen = addComponent<RegisterUnitGen>("regUnit_gen");
-        //auto exec_gen = addComponent<ExecUnitGen>("exec_gen");
-        
-        //clock
-        addCoupling(clock->clk, i_unit->clk);
-        addCoupling(clock->clk, d_unit->clk);
-        addCoupling(clock->clk, exec_unit->clk);
-        addCoupling(clock->clk, reg_unit->clk);
-        
-        //reset
-        addCoupling(reset->rst,i_unit->rst );
-        addCoupling(reset->rst,d_unit->rst );
-        addCoupling(reset->rst, exec_unit->rst);
-        addCoupling(reset->rst, reg_unit->rst);
 
-        //fetch to decode
-        addCoupling(i_unit->ir, d_unit->instruction);
+    //     //auto init = addComponent<initialize>("init");
+    //     //auto clock = addComponent<clockUnit>("clock");
+    //     auto i_unit = addComponent<instructionUnit>("i_unit");
+    //     auto d_unit = addComponent<decodeUnit>("d_unit");
+    //     auto e_unit = addComponent<executionUnit>("e_unit");
+    //     auto r_unit = addComponent<registerUnit>("r_unit");
+    auto risc = addComponent<risc_processor>("risc");
+    auto mem = addComponent<main_memory>("mem");
 
-        //decode to register file
-        addCoupling(d_unit->opnda, reg_unit->opnda_addr);
-        addCoupling(d_unit->opndb, reg_unit->opndb_addr);
+    addCoupling(mem->instruction, risc->instrIn);
+    addCoupling(risc->pc, mem->pc);
+    // st: proc to mm
+    addCoupling(risc->stAddrOut, mem->dataMemAddrIn);
+    addCoupling(risc->stData, mem->dataIn);
 
-        //decode to execution
-        addCoupling(d_unit->opcode, exec_unit->opcode);
-        addCoupling(d_unit->dataMemAddr, exec_unit->dataMemAddr);
-        addCoupling(d_unit->dest, exec_unit->destAddr);
-        addCoupling(d_unit->reg_wr_vld, exec_unit->reg_wr_vld);
+    //ld
+    addCoupling(risc->dataMemAddrLd, mem->dataMemAddrIn);
+    addCoupling(risc->ldRegOut, mem->ldRegIn);
+    addCoupling(mem->dataOut, risc->ldData);
+    addCoupling(mem->ldRegOut,risc->ldRegIn);
 
-        //register file to execution
-        addCoupling(reg_unit->oprnd_a, exec_unit->opnda);
-        addCoupling(reg_unit->oprnd_b, exec_unit->opndb);
 
-        //execution unit to register file
-        addCoupling(exec_unit->destReg, reg_unit->result);
-        addCoupling(exec_unit->reg_wr_vld, reg_unit->reg_wr_vld);
-        addCoupling(exec_unit->destAddr, reg_unit->dst);
+    //     //couple iunit and decode unit
+    //     addCoupling(i_unit->ir, d_unit->instruction);
+
+    //     //couple d_unit and reg file
+    //     addCoupling(d_unit->opnda, r_unit->opnda_addr);
+    //     addCoupling(d_unit->opndb, r_unit->opndb_addr);
+    //     addCoupling(d_unit->stReg, r_unit->stReg);
+    //     addCoupling(d_unit->dataMemAddrSt, r_unit->stAddrIn);
         
 
-        //addCoupling(init->pc_init, i_mem->init);
-        // addCoupling(i_mem->instruction, i_unit->instruction);
-        // addCoupling(i_unit->pc, i_mem->pc);
-        // addCoupling(i_unit->ir, d_unit->instruction);
+    //     //couple d_unit and exec unit
+    //     addCoupling(d_unit->opcode, e_unit->opcode);
+    //     addCoupling(d_unit->dest, e_unit->destAddr);
+
+    //     //couple reg_file and exec unit
+    //     addCoupling(r_unit->oprnd_a ,e_unit->opnda);
+    //     addCoupling(r_unit->oprnd_b ,e_unit->opndb);
+    //     addCoupling(e_unit->result,r_unit->result);
+    //     addCoupling(e_unit->destReg,r_unit->dst);
+
+    //     //couple
+
+
         
-        //Test Instruction Unit
-        // addCoupling(instrUnit_gen->clk, i_unit->clk);
-        // addCoupling(instrUnit_gen->rst, i_unit->rst);
-        // addCoupling(instrUnit_gen->instruction, i_unit->instruction);
 
-        //Test Decode Unit
-        // addCoupling(instrUnit_gen->clk, d_unit->clk);
-        // addCoupling(instrUnit_gen->rst, d_unit->rst);
-        // addCoupling(instrUnit_gen->instruction, d_unit->instruction);
-
-        //Test RegFile
-        // addCoupling(regUnit_gen->clk , reg_unit->clk);
-        // addCoupling(regUnit_gen->rst , reg_unit->rst);
-        // addCoupling(regUnit_gen->reg_wr_vld , reg_unit->reg_wr_vld);
-        // addCoupling(regUnit_gen->result , reg_unit->result);
-        // addCoupling(regUnit_gen->dst , reg_unit->dst);
-        // addCoupling(regUnit_gen->opnda_addr , reg_unit->opnda_addr);
-        // addCoupling(regUnit_gen->opndb_addr , reg_unit->opndb_addr);
-
-        //Test execution unit
-        // addCoupling(exec_gen->clk , exec_unit->clk);
-        // addCoupling(exec_gen->rst , exec_unit->rst);
-        // addCoupling(exec_gen->opcode , exec_unit->opcode);
-        // addCoupling(exec_gen->dataMemAddr , exec_unit->dataMemAddr);
-        // addCoupling(exec_gen->opnda , exec_unit->opnda);
-        // addCoupling(exec_gen->opndb , exec_unit->opndb);
-        // addCoupling(exec_gen->destAddr , exec_unit->destAddr);
-        // addCoupling(exec_gen->reg_wr_vld, exec_unit->reg_wr_vld);
+    //     //couple d_unit with mm
 
 
+        
+
+    //     addCoupling(d_unit->opcode, e_unit->opcode);
+    //     addCoupling(d_unit->opnda, r_unit->opnda_addr);
+    //     addCoupling(d_unit->opndb, r_unit->opndb_addr);
+    //     addCoupling(d_unit->dest, e_unit->destAddr);
+    //     //addCoupling(d_unit->ldReg, r_unit->opnda_addr);
+    //     //ld
+    //     addCoupling(d_unit->dataMemAddrLd, d_mem->dataMemAddrOut);
+    //     addCoupling(d_unit->ldReg, d_mem->ldRegIn);
+    //     //st
+    //     addCoupling(d_unit->dataMemAddrSt, r_unit->stAddrIn);
+    //     addCoupling(d_unit->stReg, r_unit->stReg);
+
+    //     addCoupling(r_unit->oprnd_a, e_unit->opnda);
+    //     addCoupling(r_unit->oprnd_b, e_unit->opndb);
+
+    //     addCoupling(e_unit->result, r_unit->result);
+    //     addCoupling(e_unit->destReg, r_unit->dst);
+
+    //     addCoupling(d_mem->dataOut, r_unit->ldData);
+    //     addCoupling(d_mem->ldRegOut, r_unit->ldReg);
+
+    //     addCoupling(r_unit->stData, d_mem->dataIn);
+    //     addCoupling(r_unit->stAddrOut, d_mem->dataMemAddrIn);
     }
 };
 

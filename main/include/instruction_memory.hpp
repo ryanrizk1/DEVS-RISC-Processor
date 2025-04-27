@@ -3,7 +3,6 @@
 
 #include <string>
 #include <array>
-#include <limits>
 #include <iostream>
 #include "cadmium/modeling/devs/atomic.hpp"
 
@@ -13,32 +12,38 @@ struct instructionMemory_State {
     double sigma;
     int pc;
     std::string instruction;
-    std::array<std::string, 32> instructions 
-      = { "1110000000000", "1110000010001", "1110000100010" };
-    instructionMemory_State()
-      : sigma(std::numeric_limits<double>::infinity()), 
-        pc(0), instruction(instructions[0])
-    {}
+    // std::array<std::string, 32> instructions = {"1110000000000", "1110000010001", "1110000100010", "1110000110011", "1110001000100", "1110001010101", "1110001100110", "1110001110111", "0001000001000", "0010111110001", "0011010101010", "0100011100011", "0101100100100", "0110101000101", "0111110000110", "1000111000111", "1001000000000", "1010001000001", "1011010000010", "1100011000011", "1101100000100", "1111000001000", "1111000011001", "1111000101010", "1111000111011", "1111001001100", "1111001011101", "1111001101110", "1111001111111", "0000000000000", "0000000000000", "0000000000000"};
+    std::array<std::string, 32> instructions = {
+        "0001001010011",
+        "0010001010011",
+        "0011010011100",
+        "0100011100101",
+        "0101100101110",
+        "1110000010001",
+        "1111000010010",
+        "0001010101111","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000","0000000000000"};
+    
+    explicit instructionMemory_State(): sigma(std::numeric_limits<double>::infinity()){
+    }
 };
 
 #ifndef NO_LOGGING
-inline std::ostream& operator<<(std::ostream &out, const instructionMemory_State& state) {
-    out << "{σ=" << state.sigma << ", pc=" << state.pc << "}";
+std::ostream& operator<<(std::ostream &out, const instructionMemory_State& state) {
+    out  << "{sigma: " << state.sigma << ", pc: " << state.pc << "}";
     return out;
 }
 #endif
 
 class instructionMemory : public Atomic<instructionMemory_State> {
-public:
-    Port<int>         clk;         // clock
-    Port<int>         pc;          // program counter input
-    Port<std::string> instruction; // fetched instruction output
+    public:
+    
+    //Port<int> init;
+    Port<int> pc;
+    Port<std::string> instruction;
 
-    instructionMemory(const std::string &id)
-      : Atomic<instructionMemory_State>(id, instructionMemory_State())
-    {
-        clk         = addInPort<int>("clk");
-        pc          = addInPort<int>("pc");
+    instructionMemory(const std::string id) : Atomic<instructionMemory_State>(id, instructionMemory_State()) {
+        //init = addInPort<int>("init");
+        pc = addInPort<int>("pc");
         instruction = addOutPort<std::string>("instruction");
     }
 
@@ -46,30 +51,28 @@ public:
         state.sigma = std::numeric_limits<double>::infinity();
     }
 
-    void externalTransition(instructionMemory_State& state, double /*e*/) const override {
-        // on rising edge of clk, fetch whichever address is on pc
-        if (!clk->empty() && clk->getBag().back() == 1) {
-            if (!pc->empty()) {
-                state.pc = pc->getBag().back();
-                // wrap around if we go past our small test program
-                if (state.pc < 0 || state.pc >= (int)state.instructions.size()) {
-                    state.pc = 0;
-                }
-                state.instruction = state.instructions[state.pc];
-                state.sigma = 0.1;
-            }
+    void externalTransition(instructionMemory_State& state, double e) const override {
+        // if(!init->empty()){
+        //     state.pc = init->getBag().back();
+        //     state.instruction = state.instructions[state.pc];
+        //     state.sigma = 0.1;
+        // }
+        if(!pc->empty()){
+            state.pc = pc->getBag().back();
+            //int loc = std::stoi(state.pc);
+            state.instruction = state.instructions[state.pc]; 
+            state.sigma = 0.1;
         }
     }
-
+    
     void output(const instructionMemory_State& state) const override {
-        std::cout << "[i_mem] sending instruction: " 
-                  << state.instruction << std::endl;
+        std::cout << "[i_mem]: instruction sent to i_unit: " << state.instruction << std::endl; 
         instruction->addMessage(state.instruction);
     }
 
-    [[nodiscard]] double timeAdvance(const instructionMemory_State& state) const override {
+    [[nodiscard]] double timeAdvance(const instructionMemory_State& state) const override {     
         return state.sigma;
     }
 };
 
-#endif // INSTRUCTION_MEMORY_HPP
+#endif
