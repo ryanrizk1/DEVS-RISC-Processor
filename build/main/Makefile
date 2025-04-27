@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ryanrizk/SYSC4906/TermProject/blank_project_rt
+CMAKE_SOURCE_DIR = /home/Tala/RISC
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build
+CMAKE_BINARY_DIR = /home/Tala/RISC/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,14 +87,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build/CMakeFiles /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build/main//CMakeFiles/progress.marks
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build/CMakeFiles 0
+	cd /home/Tala/RISC/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/Tala/RISC/build/CMakeFiles /home/Tala/RISC/build/main//CMakeFiles/progress.marks
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/Tala/RISC/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/clean
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/clean
 .PHONY : clean
 
 # The main clean target
@@ -103,22 +103,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/preinstall
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/preinstall
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/Tala/RISC/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 main/CMakeFiles/sample_project.dir/rule:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/CMakeFiles/sample_project.dir/rule
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main/CMakeFiles/sample_project.dir/rule
 .PHONY : main/CMakeFiles/sample_project.dir/rule
 
 # Convenience name for target.
@@ -127,7 +127,7 @@ sample_project: main/CMakeFiles/sample_project.dir/rule
 
 # fast build rule for target.
 sample_project/fast:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/build
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/build
 .PHONY : sample_project/fast
 
 main.o: main.cpp.o
@@ -135,7 +135,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.o
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -143,7 +143,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.i
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -151,7 +151,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.s
+	cd /home/Tala/RISC/build && $(MAKE) $(MAKESILENT) -f main/CMakeFiles/sample_project.dir/build.make main/CMakeFiles/sample_project.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -177,6 +177,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/ryanrizk/SYSC4906/TermProject/blank_project_rt/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/Tala/RISC/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
