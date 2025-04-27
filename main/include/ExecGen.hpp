@@ -2,53 +2,61 @@
 #define EXEC_UNIT_GEN_HPP
 
 #include <string>
+#include <vector>
 #include <limits>
 #include <iostream>
+#include <tuple>
 #include "cadmium/modeling/devs/atomic.hpp"
 
 using namespace cadmium;
+using std::string;
+using std::vector;
+using std::tuple;
+using std::get;
 
 struct ExecUnitGenState {
-    double  sigma;
-    size_t  idx;
-    ExecUnitGenState() : sigma(0.0), idx(0) {}
+    double sigma;                   // time until next event
+    int    testIdx;                 // which vector we're on
+    vector<tuple<string,string,string,string>> tests;
+    ExecUnitGenState()
+      : sigma(0.0)
+      , testIdx(0)
+      , tests{
+          // { opcode, opnda,       opndb,       destAddr }
+          {"0001","00100010","01000100","011"}, // ADD  R1+R2→R3
+          {"0010","01100110","00100010","100"}, // SUB  R3−R1→R4
+          {"0011","01000100","01100110","101"}  // AND  R2&R3→R5
+      }
+    {}
 };
 
 #ifndef NO_LOGGING
-inline std::ostream& operator<<(std::ostream &out, const ExecUnitGenState &s) {
-    out << "{cycle=" << s.idx << ", sigma=" << s.sigma << "}";
+inline std::ostream& operator<<(std::ostream &out, const ExecUnitGenState& s) {
+    out << "{sigma=" << s.sigma << ", idx=" << s.testIdx << "}";
     return out;
 }
 #endif
 
 class ExecUnitGen : public Atomic<ExecUnitGenState> {
 public:
-    Port<int>         clk;
-    Port<int>         rst;
-    Port<int>         reg_wr_vld;
-    Port<std::string> opcode;
-    Port<std::string> dataMemAddr;
-    Port<std::string> opnda;
-    Port<std::string> opndb;
-    Port<std::string> destAddr;
+    // outputs that match ExecutionUnit's input ports
+    Port<string> opcode, opnda, opndb, destAddr;
+    Port<int>    reg_wr_vld;
 
-    ExecUnitGen(const std::string &id)
+    ExecUnitGen(const string &id) 
       : Atomic<ExecUnitGenState>(id, ExecUnitGenState())
     {
-        clk         = addOutPort<int>("clk");
-        rst         = addOutPort<int>("rst");
-        reg_wr_vld  = addOutPort<int>("reg_wr_vld");
-        opcode      = addOutPort<std::string>("opcode");
-        dataMemAddr = addOutPort<std::string>("dataMemAddr");
-        opnda       = addOutPort<std::string>("opnda");
-        opndb       = addOutPort<std::string>("opndb");
-        destAddr    = addOutPort<std::string>("destAddr");
+        opcode     = addOutPort<string>("opcode");
+        opnda      = addOutPort<string>("opnda");
+        opndb      = addOutPort<string>("opndb");
+        destAddr   = addOutPort<string>("destAddr");
+        reg_wr_vld = addOutPort<int>("reg_wr_vld");
     }
 
     void internalTransition(ExecUnitGenState &s) const override {
-        s.idx++;
-        if (s.idx < 6) {
-            s.sigma = 0.1;
+        s.testIdx++;
+        if (s.testIdx < (int)s.tests.size()) {
+            s.sigma = 0.1;  // schedule next test in 0.1 time units
         } else {
             s.sigma = std::numeric_limits<double>::infinity();
         }
@@ -59,64 +67,19 @@ public:
     }
 
     void output(const ExecUnitGenState &s) const override {
-        clk->addMessage(1);
-        switch (s.idx) {
-            case 0:  // ADD 1+2 -> R1
-                rst         ->addMessage(0);
-                reg_wr_vld  ->addMessage(1);
-                opcode      ->addMessage("0001");
-                dataMemAddr ->addMessage("0000");
-                opnda       ->addMessage("0000000000001");
-                opndb       ->addMessage("0000000000010");
-                destAddr    ->addMessage("001");
-                break;
-            case 1:  // SUB 3-1 -> R2
-                rst         ->addMessage(0);
-                reg_wr_vld  ->addMessage(1);
-                opcode      ->addMessage("0010");
-                dataMemAddr ->addMessage("0000");
-                opnda       ->addMessage("0000000000011");
-                opndb       ->addMessage("0000000000001");
-                destAddr    ->addMessage("010");
-                break;
-            case 2:  // AND -> R3
-                rst         ->addMessage(0);
-                reg_wr_vld  ->addMessage(1);
-                opcode      ->addMessage("0011");
-                dataMemAddr ->addMessage("0000");
-                opnda       ->addMessage("1010101010101");
-                opndb       ->addMessage("0101010101010");
-                destAddr    ->addMessage("011");
-                break;
-            case 3:  // LOAD from (R3+2) -> R4
-                rst         ->addMessage(0);
-                reg_wr_vld  ->addMessage(1);
-                opcode      ->addMessage("1110");
-                dataMemAddr ->addMessage("0010");
-                opnda       ->addMessage("0000000000011");
-                opndb       ->addMessage("0000000000000");
-                destAddr    ->addMessage("100");
-                break;
-            case 4:  // STORE R7 -> M[R4+3]
-                rst         ->addMessage(0);
-                reg_wr_vld  ->addMessage(0);
-                opcode      ->addMessage("1111");
-                dataMemAddr ->addMessage("0011");
-                opnda       ->addMessage("0000000000100");
-                opndb       ->addMessage("0000000000111");
-                destAddr    ->addMessage("101");
-                break;
-            case 5:  // RESET
-                rst         ->addMessage(1);
-                reg_wr_vld  ->addMessage(0);
-                opcode      ->addMessage("0000");
-                dataMemAddr ->addMessage("0000");
-                opnda       ->addMessage("0000000000000");
-                opndb       ->addMessage("0000000000000");
-                destAddr    ->addMessage("000");
-                break;
-            default:
-                break;
+        if (s.testIdx < (int)s.tests.size()) {
+            auto &t = s.tests[s.testIdx];
+            opcode    ->addMessage(get<0>(t));
+            opnda     ->addMessage(get<1>(t));
+            opndb     ->addMessage(get<2>(t));
+            destAddr  ->addMessage(get<3>(t));
+            reg_wr_vld->addMessage(1);
+            std::cout << "[ExecUnitGen] test " << s.testIdx
+                      << ": opcode=" << get<0>(t)
+                      << " A=" << get<1>(t)
+                      << " B=" << get<2>(t)
+                      << " dest=" << get<3>(t)
+                      << std::endl;
         }
     }
 
