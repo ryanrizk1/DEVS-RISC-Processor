@@ -3,11 +3,19 @@
 |:--|:--|
 |:heavy_check_mark:|:heavy_check_mark:|
 ## Introduction
-This is a blank project that you can use as a template to start off your DEVS models. This project consits of a template atomic and coupled model.
+This repository contains a Cadmium simulation of a RISC (Reduced Instruction Set Computer) processor. 
+The processor is made of 4 pipelined stages and includes instruction, decode, execution and memory read/write stages. 
+Each stage runs in parallel to increase the throughput of the system. The processor also utilizes a read only instruction memory and read/write data memory.
 
 ## Dependencies
 This project assumes that you have Cadmium installed in a location accessible by the environment variable $CADMIUM.
 _This dependency would be met by default if you are using the ARSLAB servers. To check, try `echo $CADMIUM` in the terminal_
+
+## Install
+To install this project, run:
+```sh
+git clone https://github.com/ryanrizk1/DEVS-RISC-Processor.git
+```
 
 ## Build
 To build this project, run:
@@ -16,28 +24,14 @@ source build_sim.sh
 ```
 __NOTE__: Everytime you run build_sim.sh, the contents of `build/` and `bin/` will be replaced.
 
-To build this project for the ESP32, run:
-```sh
-source build_esp.sh
-```
-
 ## Execute
 To run the project, run:
 ```sh
 ./bin/sample_project
 ```
 
-To flash the project onto the esp32, run:
+## Log Results
+To log the output of the simulation, run:
 ```sh
-idf.py -p $ESP_PORT flash
-```
-
-## Modify
-You can modify this project per your requirement. Change the project name defined in the topmost CMakeLists.txt file here:
-```cmake
-set(projectName "sample_project")
-```
-If you want to add other include directories, add the following to the CMakeLists.txt file in the `main` directory:
-```cmake
-target_include_directories(${projectName} PRIVATE "/path/to/dependency")
+./bin/sameple_project > logs.log
 ```
